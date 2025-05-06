@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>🎬 My Movie Database API</title>
+
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body>
+
+    <header>
+
+        <h1>🎬 My Movie Database API</h1>
+
+        <p>Welcome to the Movie Database API. Manage your movie collection below.</p>
+
+    </header>
+
+
+
+    <section>
+
+        <h2>Movie Data</h2>
+
+        <div id="errorLog" style="color: red; margin-bottom: 10px;"></div>
+
+        <div class="controls">
+
+            <button onclick="showAddForm()">Add Movie</button>
+
+            <label style="margin-left: 10px;">Delete Movie by ID: <input type="number" id="deleteId" placeholder="Enter Movie ID" required></label>
+
+            <button onclick="deleteMovie()">Delete</button>
+
+        </div>
+
+        <div id="addForm" style="display: none;">
+
+            <h3>Add New Movie</h3>
+
+            <form id="movieForm">
+
+                <label>Movie Name: <input type="text" id="movie_name" required></label><br>
+
+                <label>Year of Release: <input type="text" id="year_of_release" required></label><br>
+
+                <label>Category: <input type="text" id="category" required></label><br>
+
+                <label>Run Time: <input type="text" id="run_time" required></label><br>
+
+                <label>Genre: <input type="text" id="genre" required></label><br>
+
+                <label>IMDB Rating: <input type="text" id="imdb_rating" required></label><br>
+
+                <label>Votes: <input type="text" id="votes" required></label><br>
+
+                <label>Gross Total: <input type="text" id="gross_total" required></label><br>
+
+                <button type="button" onclick="addMovie()">Submit</button>
+
+                <button type="button" onclick="hideAddForm()">Cancel</button>
+
+            </form>
+
+        </div>
+
+        <table id="movieTable">
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+
+                    <th>Movie Name</th>
+
+                    <th>Year of Release</th>
+
+                    <th>Category</th>
+
+                    <th>Run Time</th>
+
+                    <th>Genre</th>
+
+                    <th>IMDB Rating</th>
+
+                    <th>Votes</th>
+
+                    <th>Gross Total</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tableBody">
+
+                <tr><td colspan="9">Loading data...</td></tr>
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+
+
+    <footer>
+
+        <p>Powered by Your Name | API Documentation</p>
+
+    </footer>
+
+
+
+    <script>
+
+        // Log messages to both console and page
+
+        function logMessage(message, isError = false) {
+
+            console.log(message);
+
+            const logDiv = document.getElementById('errorLog');
+
+            logDiv.innerHTML += `<p style="color: ${isError ? 'red' : 'black'}">${message}</p>`;
+
+        }
+
+
+
+        // Clear error log
+
+        function clearLog() {
+
+            document.getElementById('errorLog').innerHTML = '';
+
+        }
+
+
+
+        // Fetch and display movie data
+
+        async function fetchMovieData() {
+
+            logMessage('Attempting to fetch data from http://43.203.224.244:8000/data');
+
+            try {
+
+                const response = await fetch('http://43.203.224.244:8000/data', {
+
+                    method: 'GET',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    mode: 'cors'
+
+                });
+
+                logMessage(`Response status: ${response.status}`);
+
+                if (!response.ok) {
+
+                    throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
+
+                }
+
+                const data = await response.json();
+
+                logMessage(`Received ${data.length} movie records`);
+
+                const tableBody = document.getElementById('tableBody');
+
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+
+                    tableBody.innerHTML = '<tr><td colspan="9">No movie data available.</td></tr>';
+
+                    logMessage('No data returned from server');
+
+                } else {
+
+                    data.forEach(movie => {
+
+                        const row = document.createElement('tr');
+
+                        row.innerHTML = `
+
+                            <td>${movie.id}</td>
+
+                            <td>${movie.movie_name}</td>
+
+                            <td>${movie.year_of_release}</td>
+
+                            <td>${movie.category}</td>
+
+                            <td>${movie.run_time}</td>
+
+                            <td>${movie.genre}</td>
+
+                            <td>${movie.imdb_rating}</td>
+
+                            <td>${movie.votes}</td>
+
+                            <td>${movie.gross_total}</td>
+
+                        `;
+
+                        tableBody.appendChild(row);
+
+                    });
+
+                    logMessage('Table updated successfully');
+
+                }
+
+                clearLog();
+
+            } catch (error) {
+
+                logMessage(`Error fetching movie data: ${error.message}`, true);
+
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="9">Failed to load data. See error log above.</td></tr>';
+
+            }
+
+        }
+
+
+
+        // Show/hide add movie form
+
+        function showAddForm() {
+
+            document.getElementById('addForm').style.display = 'block';
+
+        }
+
+
+
+        function hideAddForm() {
+
+            document.getElementById('addForm').style.display = 'none';
+
+            document.getElementById('movieForm').reset();
+
+        }
+
+
+
+        // Add a new movie
+
+        async function addMovie() {
+
+            const newMovie = {
+
+                movie_name: document.getElementById('movie_name').value,
+
+                year_of_release: document.getElementById('year_of_release').value,
+
+                category: document.getElementById('category').value,
+
+                run_time: document.getElementById('run_time').value,
+
+                genre: document.getElementById('genre').value,
+
+                imdb_rating: document.getElementById('imdb_rating').value,
+
+                votes: document.getElementById('votes').value,
+
+                gross_total: document.getElementById('gross_total').value
+
+            };
+
+            logMessage('Attempting to add new movie');
+
+            try {
+
+                const response = await fetch('http://43.203.224.244:8000/add', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify(newMovie),
+
+                    mode: 'cors'
+
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'Data inserted successfully') {
+
+                    logMessage('Movie added successfully');
+
+                    hideAddForm();
+
+                    fetchMovieData();
+
+                } else {
+
+                    logMessage(`Error adding movie: ${result.error}`, true);
+
+                }
+
+            } catch (error) {
+
+                logMessage(`Error adding movie: ${error.message}`, true);
+
+            }
+
+        }
+
+
+
+        // Delete a movie
+
+        async function deleteMovie() {
+
+            const id = document.getElementById('deleteId').value;
+
+            if (!id) {
+
+                logMessage('Please enter a Movie ID to delete', true);
+
+                return;
+
+            }
+
+            logMessage(`Attempting to delete movie ID ${id}`);
+
+            try {
+
+                const response = await fetch('http://43.203.224.244:8000/delete', {
+
+                    method: 'POST',
+
+                    headers: { 'Content-Type': 'application/json' },
+
+                    body: JSON.stringify({ id: parseInt(id) }),
+
+                    mode: 'cors'
+
+                });
+
+                const result = await response.json();
+
+                if (result.status === 'Data deleted successfully') {
+
+                    logMessage('Movie deleted successfully');
+
+                    document.getElementById('deleteId').value = '';
+
+                    fetchMovieData();
+
+                } else {
+
+                    logMessage(`Error deleting movie: ${result.error}`, true);
+
+                }
+
+            } catch (error) {
+
+                logMessage(`Error deleting movie: ${error.message}`, true);
+
+            }
+
+        }
+
+
+
+        // Load data on page load
+
+        window.onload = fetchMovieData;
+
+    </script>
+
+</body>
+
+</html>
