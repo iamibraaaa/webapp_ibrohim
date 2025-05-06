@@ -25,7 +25,7 @@ The project folder name should also include your name (e.g., webapp_xusanboy)
 SSH into EC2:
 
 Run:
-ssh -i "C:\your_key_2_ec2.pem" ubuntu@<EC2_Public_IP>
+ssh -i "/Users/Mac/Desktop/your_key_2_ec2.pem" ubuntu@<EC2_Public_IP>
 Create Project Directory and Flask Application:
 
 Create the project directory and Python file:
